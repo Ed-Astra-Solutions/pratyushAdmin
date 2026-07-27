@@ -1,0 +1,60 @@
+name: Deploy admin console
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The console is static; the only thing that varies by environment is
+      # where the API lives, so it is written in at deploy time rather than
+      # committed. Nothing secret goes in here — these are public URLs.
+      - name: Write config.js
+        env:
+          PL_API_BASE: ${{ vars.PL_API_BASE }}
+          PL_SITE_URL: ${{ vars.PL_SITE_URL }}
+        run: |
+          : "${PL_API_BASE:?set the PL_API_BASE repository variable (Settings → Secrets and variables → Actions → Variables)}"
+          cat > config.js <<EOF
+          window.PL_ADMIN_CONFIG = {
+            apiBase: "${PL_API_BASE%/}",
+            siteUrl: "${PL_SITE_URL:-https://pratyushfitness.edastra.in}"
+          };
+          EOF
+          cat config.js
+
+      - name: Stage the site
+        run: |
+          mkdir -p _site
+          cp index.html app.js schema.js styles.css config.js _site/
+          cp robots.txt _site/
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
