@@ -10,7 +10,7 @@ index.html    the shell — login gate + app frame
 app.js        all behaviour: auth, content editing, applications inbox, deploys
 schema.js     which fields appear in which section, and how collections are shaped
 styles.css    black/yellow, matching the site
-config.js     where the API is — written at deploy time from repo variables
+config.js     where the API is — plain committed values, edit and push
 ```
 
 ## What it does
@@ -42,21 +42,24 @@ Site source and the application form live in
 [Ed-Astra-Solutions/pratyush](https://github.com/Ed-Astra-Solutions/pratyush);
 the backend is `backend/` in that repo.
 
+## Deploying
+
+There is no build step. GitHub Pages serves this branch directly, so a push to
+`main` is the deploy — usually live within a minute.
+
+Settings → Pages → Source: **Deploy from a branch**, `main` / `/ (root)`.
+
+> Deliberately branch-based rather than an Actions workflow: custom workflows
+> are currently blocked on this organisation by a billing lock, and this repo
+> has nothing to build. If that changes and you want `config.js` generated per
+> environment instead of committed, the workflow that did it is in the first
+> commit's history.
+
+To point the console at a different backend, edit `config.js` and push.
+
 ## Setup
 
-**1. Repository variables** — Settings → Secrets and variables → Actions → Variables:
-
-| Variable | Value |
-| --- | --- |
-| `PL_API_BASE` | the EC2 endpoint, e.g. `https://api.pratyushfitness.edastra.in` |
-| `PL_SITE_URL` | the public site, e.g. `https://pratyushfitness.edastra.in` |
-
-The deploy fails on purpose if `PL_API_BASE` is unset, rather than shipping a
-console that points nowhere.
-
-**2. Pages** — Settings → Pages → Source: **GitHub Actions**.
-
-**3. Allow this origin on the backend.** In the EC2 `.env`, `ADMIN_ORIGINS`
+**Allow this origin on the backend.** In the EC2 `.env`, `ADMIN_ORIGINS`
 must include `https://ed-astra-solutions.github.io` or the browser blocks every
 call:
 
