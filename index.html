@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Pratyush Liftz — Admin</title>
+<title>Pratyush Liftz — Website editor</title>
 <!-- Inline, so the icon works wherever this is served from (project Pages
      sites live under a /repo-name/ subpath, where absolute paths 404). -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0B0D'/%3E%3Ctext x='16' y='23' font-family='Helvetica,Arial' font-size='19' font-weight='bold' fill='%23FFD400' text-anchor='middle'%3EPL%3C/text%3E%3C/svg%3E">
@@ -12,18 +12,18 @@
 </head>
 <body>
 
-<!-- Login gate. The password is only ever checked by the EC2 backend;
-     this page is public static hosting and holds no secrets. -->
+<!-- Sign in. The password is only ever checked by the backend; this page is
+     public static hosting and holds no secrets. -->
 <div class="login" id="login">
   <form class="login-card" id="login-form">
-    <h1>Pratyush<b style="color:var(--yellow)">&nbsp;Liftz</b></h1>
-    <p>Content console. Sign in to edit the site.</p>
+    <h1>Pratyush<b>&nbsp;Liftz</b></h1>
+    <p>Sign in to edit your website.</p>
     <label for="user">Username</label>
     <input id="user" type="text" autocomplete="username" required>
-    <label for="pw" style="margin-top:14px">Password</label>
+    <label for="pw" style="margin-top:16px">Password</label>
     <input id="pw" type="password" autocomplete="current-password" required>
-    <p id="login-err" class="hidden" style="color:var(--red);margin:12px 0 0"></p>
-    <button class="btn" style="width:100%;justify-content:center;margin-top:18px" type="submit" id="login-btn">Sign in</button>
+    <p id="login-err" class="hidden" style="color:var(--red);margin:14px 0 0;font-size:14px"></p>
+    <button class="btn" style="width:100%;margin-top:22px" type="submit" id="login-btn">Sign in</button>
   </form>
 </div>
 
@@ -32,17 +32,18 @@
     <div class="brand">Pratyush<b>Liftz</b></div>
     <nav id="nav"></nav>
     <div class="side-foot">
-      <div id="last-saved">—</div>
-      <button class="btn ghost tiny" style="margin-top:12px" id="logout">Sign out</button>
+      <span id="last-saved">—</span>
+      <a class="btn ghost sm" id="view-site" target="_blank" rel="noopener">View my website</a>
+      <button class="btn quiet sm" id="logout" style="justify-content:flex-start">Sign out</button>
     </div>
   </aside>
 
   <main class="main">
     <header class="top">
-      <h2 id="section-title">Content</h2>
-      <span class="pill" id="status">Loaded</span>
-      <a class="btn ghost tiny" id="view-site" target="_blank" rel="noopener">View site</a>
-      <button class="btn" id="save" disabled>Save &amp; publish</button>
+      <h2 id="section-title">Blog</h2>
+      <span class="pill" id="status">Everything is published</span>
+      <span class="spacer"></span>
+      <button class="btn" id="save" disabled>Publish changes</button>
     </header>
     <div class="body" id="panel"></div>
   </main>
@@ -50,6 +51,7 @@
 
 <script src="config.js"></script>
 <script src="schema.js"></script>
+<script src="editor.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

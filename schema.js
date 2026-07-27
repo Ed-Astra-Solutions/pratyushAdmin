@@ -1,137 +1,422 @@
 /**
- * Console layout for site.json.
+ * What the console shows, and what it calls things.
  *
- * Text fields are discovered from the content file itself, so any new
- * data-cms="..." hook added to the markup shows up here automatically —
- * this file only decides grouping, order and labels. Collections are
- * declared explicitly because they need typed sub-fields.
+ * Every entry here maps a place in content/site.json to plain English. The
+ * console renders nothing that is not listed, so this file is the one place
+ * to edit when the site gains or loses a piece of copy.
+ *
+ * Field types:
+ *   rich   one line of copy, edited with bold/italic buttons
+ *   long   a paragraph, same buttons
+ *   text   plain text, no formatting (names, numbers, labels)
+ *   url    a web address
+ *   image  a picture, uploaded from the computer
+ *   list   a simple list of lines
+ *   date   a calendar date
  */
 window.PL_SCHEMA = {
-  // Pared back to the form's questions alone. The console is otherwise a
-  // full editor for site.json; uncomment a line to bring that part back.
-  sections: [
-    { id: 'applyform', label: 'Application form', form: true },
 
-    // { id: 'applications', label: 'Applications', submissions: true },
-    // { id: 'hero',     label: 'Hero',        groups: ['hero', 'ticker'] },
-    // { id: 'problem',  label: 'The problem', groups: ['problem'] },
-    // { id: 'story',    label: 'Story',       groups: ['story'] },
-    // { id: 'system',   label: 'The system',  groups: ['system'] },
-    // { id: 'results',  label: 'Results',     groups: ['results'], collections: ['transformations', 'stats'] },
-    // { id: 'videos',   label: 'Videos',      groups: ['videos'],  collections: ['videoClips'] },
-    // { id: 'method',   label: 'How it works',groups: ['method'] },
-    // { id: 'fit',      label: 'Who it fits', groups: ['fit'] },
-    // { id: 'quote',    label: 'Quote',       groups: ['quote'] },
-    // { id: 'faq',      label: 'FAQ',         groups: ['faq'],     collections: ['faqs'] },
-    // { id: 'pillars',  label: 'Pillars',     groups: ['pillars'] },
-    // { id: 'enquiry',  label: 'Apply / CTA', groups: ['enquiry'] },
-    // { id: 'blog',     label: 'Blog',        groups: ['blog'],    collections: ['posts'] },
-    // { id: 'settings', label: 'Links & SEO', groups: ['meta', 'links', 'images', 'footer'] },
-    // { id: 'deploys',  label: 'Deployments', deploys: true },
-
-    // The 'applyform' entry above also carried these text groups:
-    //   groups: ['applyForm.welcome', 'applyForm.success',
-    //            'applyForm.disqualify', 'applyForm.labels', 'applyForm.meta'],
+  /* ── the three things you can edit ───────────────────────────── */
+  nav: [
+    { id: 'blog', label: 'Blog posts', icon: 'pencil' },
+    { id: 'pages', label: 'Website text', icon: 'page' },
+    { id: 'form', label: 'Application form', icon: 'form' },
   ],
 
-  groupLabels: {
-    meta: 'Page title & social preview', links: 'Links', images: 'Key images',
-    hero: 'Hero', ticker: 'Scrolling ticker', problem: 'The real problem',
-    story: 'Meet your coach', system: 'What every client gets', results: 'Client results',
-    videos: 'Video results', method: 'How it works', fit: 'Who this fits',
-    quote: 'Pull quote', faq: 'FAQ intro', pillars: 'The honest details',
-    enquiry: 'Apply section', footer: 'Footer', blog: 'Blog page',
-    'applyForm.welcome': 'Opening screen',
-    'applyForm.success': 'Thank-you screen',
-    'applyForm.disqualify': 'Screen shown when someone can\'t invest',
-    'applyForm.labels': 'Buttons & messages',
-    'applyForm.meta': 'Page title & search description',
-  },
-
-  /** Question types offered in the form editor. */
-  stepTypes: [
-    { value: 'single',  label: 'One choice (advances on click)' },
-    { value: 'multi',   label: 'Multiple choice' },
-    { value: 'text',    label: 'Short text answer' },
-    { value: 'contact', label: 'Contact details block' },
+  /* ── website text, one panel per part of the site ────────────── */
+  pages: [
+    {
+      id: 'hero',
+      label: 'Top of the home page',
+      blurb: 'The big headline and photo people see first.',
+      cards: [
+        {
+          title: 'Headline',
+          fields: [
+            { key: 'hero.line1', label: 'First line', type: 'rich' },
+            { key: 'hero.line2', label: 'Second line', type: 'rich' },
+            { key: 'hero.line3', label: 'Third line', type: 'rich' },
+            { key: 'hero.body', label: 'The sentence underneath', type: 'long' },
+            { key: 'hero.ctaLabel', label: 'Text on the button', type: 'text' },
+            { key: 'hero.spine', label: 'Small sideways text down the edge', type: 'text' },
+          ],
+        },
+        {
+          title: 'Main photo',
+          fields: [{ key: 'images.hero', label: 'Photo of you at the top of the page', type: 'image' }],
+        },
+        {
+          title: 'Scrolling strip',
+          sub: 'The line of words that slides across under the headline.',
+          fields: [{ key: 'ticker.text', label: 'Words in the strip', type: 'long' }],
+        },
+      ],
+    },
+    {
+      id: 'problem',
+      label: 'The problem',
+      blurb: 'The section that names what your clients are struggling with.',
+      cards: [{
+        title: 'Copy',
+        fields: [
+          { key: 'problem.eyebrow', label: 'Small label above the heading', type: 'text' },
+          { key: 'problem.heading', label: 'Heading', type: 'rich' },
+          { key: 'problem.pivot', label: 'Paragraph under the heading', type: 'long' },
+          { key: 'problem.pain1', label: 'Problem 1', type: 'long', hint: 'Start with the bold sentence, then the explanation.' },
+          { key: 'problem.pain2', label: 'Problem 2', type: 'long' },
+          { key: 'problem.pain3', label: 'Problem 3', type: 'long' },
+        ],
+      }],
+    },
+    {
+      id: 'story',
+      label: 'Your story',
+      blurb: 'The "meet your coach" section.',
+      cards: [
+        {
+          title: 'Photos',
+          fields: [
+            { key: 'images.story', label: 'Portrait of you', type: 'image' },
+            { key: 'images.banner', label: 'Wide team banner', type: 'image' },
+          ],
+        },
+        {
+          title: 'Copy',
+          fields: [
+            { key: 'story.eyebrow', label: 'Small label above the heading', type: 'text' },
+            { key: 'story.heading', label: 'Heading', type: 'rich' },
+            { key: 'story.lead', label: 'Opening line', type: 'long' },
+            { key: 'story.p1', label: 'Paragraph 1', type: 'long' },
+            { key: 'story.p2', label: 'Paragraph 2', type: 'long' },
+            { key: 'story.p3', label: 'Paragraph 3', type: 'long' },
+            { key: 'story.pull', label: 'The highlighted quote in the middle', type: 'long' },
+            { key: 'story.p4', label: 'Paragraph 4', type: 'long' },
+            { key: 'story.sign', label: 'Sign-off', type: 'rich' },
+          ],
+        },
+        {
+          title: 'Photo caption',
+          fields: [
+            { key: 'story.captionName', label: 'Name', type: 'text' },
+            { key: 'story.captionRole', label: 'Role', type: 'text' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'system',
+      label: 'What clients get',
+      blurb: 'The six cards describing what is included in coaching.',
+      cards: [
+        {
+          title: 'Section heading',
+          fields: [
+            { key: 'system.eyebrow', label: 'Small label above the heading', type: 'text' },
+            { key: 'system.heading', label: 'Heading', type: 'rich' },
+            { key: 'system.sub', label: 'Sentence under the heading', type: 'long' },
+          ],
+        },
+        ...[1, 2, 3, 4, 5, 6].map((n) => ({
+          title: `Card ${n}`,
+          fields: [
+            { key: `system.card${n}.title`, label: 'Title', type: 'rich' },
+            { key: `system.card${n}.body`, label: 'Description', type: 'long' },
+          ],
+        })),
+      ],
+    },
+    {
+      id: 'results',
+      label: 'Client results',
+      blurb: 'Before-and-after cards, and the numbers underneath them.',
+      cards: [{
+        title: 'Section heading',
+        fields: [
+          { key: 'results.eyebrow', label: 'Small label above the heading', type: 'text' },
+          { key: 'results.heading', label: 'Heading', type: 'rich' },
+          { key: 'results.sub', label: 'Sentence under the heading', type: 'long' },
+          { key: 'results.note', label: 'Small print below the cards', type: 'long' },
+        ],
+      }],
+      collections: ['transformations', 'stats'],
+    },
+    {
+      id: 'videos',
+      label: 'Video testimonials',
+      blurb: 'Stays hidden on the website until you add a clip.',
+      cards: [{
+        title: 'Section heading',
+        fields: [
+          { key: 'videos.eyebrow', label: 'Small label above the heading', type: 'text' },
+          { key: 'videos.heading', label: 'Heading', type: 'rich' },
+          { key: 'videos.sub', label: 'Sentence under the heading', type: 'long' },
+        ],
+      }],
+      collections: ['videoClips'],
+    },
+    {
+      id: 'method',
+      label: 'How it works',
+      blurb: 'The three steps from applying to results.',
+      cards: [
+        {
+          title: 'Section heading',
+          fields: [
+            { key: 'method.eyebrow', label: 'Small label above the heading', type: 'text' },
+            { key: 'method.heading', label: 'Heading', type: 'rich' },
+          ],
+        },
+        ...[1, 2, 3].map((n) => ({
+          title: `Step ${n}`,
+          fields: [
+            { key: `method.step${n}.title`, label: 'Step name', type: 'rich' },
+            { key: `method.step${n}.body`, label: 'What happens', type: 'long' },
+          ],
+        })),
+      ],
+    },
+    {
+      id: 'fit',
+      label: 'Who it suits',
+      blurb: 'The two lists: who this is for, and who it is not for.',
+      cards: [
+        {
+          title: 'Section heading',
+          fields: [
+            { key: 'fit.eyebrow', label: 'Small label above the heading', type: 'text' },
+            { key: 'fit.heading', label: 'Heading', type: 'rich' },
+          ],
+        },
+        {
+          title: 'This is for you if…',
+          fields: [
+            { key: 'fit.yesTitle', label: 'List heading', type: 'rich' },
+            { key: 'fit.yesItems', label: 'Points', type: 'list' },
+          ],
+        },
+        {
+          title: 'This is not for you if…',
+          fields: [
+            { key: 'fit.noTitle', label: 'List heading', type: 'rich' },
+            { key: 'fit.noItems', label: 'Points', type: 'list' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'quote',
+      label: 'Pull quote',
+      blurb: 'The large quote across the page.',
+      cards: [{
+        title: 'Quote',
+        fields: [
+          { key: 'quote.text', label: 'The quote', type: 'long' },
+          { key: 'quote.cite', label: 'Who said it', type: 'rich' },
+        ],
+      }],
+    },
+    {
+      id: 'faq',
+      label: 'Questions & answers',
+      blurb: 'The drop-down questions near the bottom of the home page.',
+      cards: [{
+        title: 'Section heading',
+        fields: [
+          { key: 'faq.eyebrow', label: 'Small label above the heading', type: 'text' },
+          { key: 'faq.heading', label: 'Heading', type: 'rich' },
+          { key: 'faq.sub', label: 'Sentence under the heading', type: 'long' },
+        ],
+      }],
+      collections: ['faqs'],
+    },
+    {
+      id: 'pillars',
+      label: 'The honest details',
+      blurb: 'Commitment, boundaries and what happens afterwards.',
+      cards: [
+        {
+          title: 'Section heading',
+          fields: [
+            { key: 'pillars.eyebrow', label: 'Small label above the heading', type: 'text' },
+            { key: 'pillars.heading', label: 'Heading', type: 'rich' },
+          ],
+        },
+        ...[1, 2, 3].map((n) => ({
+          title: `Detail ${n}`,
+          fields: [
+            { key: `pillars.p${n}.key`, label: 'Short tag on the left', type: 'text' },
+            { key: `pillars.p${n}.title`, label: 'Title', type: 'rich' },
+            { key: `pillars.p${n}.body`, label: 'Description', type: 'long' },
+          ],
+        })),
+      ],
+    },
+    {
+      id: 'enquiry',
+      label: 'Apply section',
+      blurb: 'The closing call to action on the home page.',
+      cards: [{
+        title: 'Copy',
+        fields: [
+          { key: 'enquiry.eyebrow', label: 'Small label above the heading', type: 'text' },
+          { key: 'enquiry.heading', label: 'Heading', type: 'rich' },
+          { key: 'enquiry.sub', label: 'Sentence under the heading', type: 'long' },
+          { key: 'enquiry.assure', label: 'The reassuring line', type: 'long' },
+          { key: 'enquiry.formLabel', label: 'Label above the form preview', type: 'text' },
+          { key: 'enquiry.formPreview', label: 'Form preview text', type: 'long' },
+          { key: 'enquiry.ctaLabel', label: 'Text on the button', type: 'text' },
+          { key: 'enquiry.formNote', label: 'Small print under the button', type: 'long' },
+        ],
+      }],
+    },
+    {
+      id: 'blogpage',
+      label: 'Blog page heading',
+      blurb: 'The top of the page that lists your articles.',
+      cards: [{
+        title: 'Copy',
+        fields: [
+          { key: 'blog.eyebrow', label: 'Small label above the heading', type: 'text' },
+          { key: 'blog.heading', label: 'Heading', type: 'rich' },
+          { key: 'blog.lead', label: 'Sentence under the heading', type: 'long' },
+          { key: 'blog.soon', label: 'Shown only when there are no articles yet', type: 'long' },
+          { key: 'blog.copyright', label: 'Footer line', type: 'long' },
+          { key: 'blog.metaTitle', label: 'Title shown in the browser tab and on Google', type: 'text' },
+        ],
+      }],
+    },
+    {
+      id: 'settings',
+      label: 'Links & Google',
+      blurb: 'Where your buttons point, and how the site looks when shared.',
+      cards: [
+        {
+          title: 'Links',
+          fields: [
+            { key: 'links.apply', label: 'Application form', type: 'url', hint: 'Leave as /apply/ to use the form on your own site.' },
+            { key: 'links.instagram', label: 'Instagram', type: 'url' },
+            { key: 'links.youtube', label: 'YouTube', type: 'url' },
+            { key: 'links.email', label: 'Email link', type: 'url', hint: 'Must start with mailto: — for example mailto:hello@pratyushliftz.com' },
+          ],
+        },
+        {
+          title: 'Google & sharing',
+          sub: 'What people see in search results and when the link is pasted into WhatsApp or Instagram.',
+          fields: [
+            { key: 'meta.title', label: 'Title on Google', type: 'text' },
+            { key: 'meta.description', label: 'Description on Google', type: 'long' },
+            { key: 'meta.ogTitle', label: 'Title when shared', type: 'text' },
+            { key: 'meta.ogDescription', label: 'Description when shared', type: 'long' },
+          ],
+        },
+        {
+          title: 'Footer',
+          fields: [{ key: 'footer.copyright', label: 'Footer line on the home page', type: 'long' }],
+        },
+      ],
+    },
   ],
 
-  // Rendering hints by dotted key or key suffix.
-  fieldLabels: {
-    'hero.line1': 'Headline line 1', 'hero.line2': 'Headline line 2', 'hero.line3': 'Headline line 3',
-    'hero.spine': 'Vertical spine text', 'hero.body': 'Sub-headline', 'hero.ctaLabel': 'Button label',
-    'links.apply': 'Application form URL', 'links.instagram': 'Instagram URL',
-    'links.youtube': 'YouTube URL', 'links.email': 'Email link (mailto:…)',
-    'images.hero': 'Hero image', 'images.story': 'Founder portrait', 'images.banner': 'Team banner',
-    'meta.title': 'Browser / search title', 'meta.description': 'Search description',
-    'meta.ogTitle': 'Social share title', 'meta.ogDescription': 'Social share description',
-  },
-
-  // Fields that hold a path into frontend/images and get the upload widget.
-  imageKeys: ['images.hero', 'images.story', 'images.banner'],
-
+  /* ── repeating lists of things ───────────────────────────────── */
   collections: {
     transformations: {
-      label: 'Client transformations',
+      label: 'Client results',
+      one: 'client',
       titleField: 'name',
-      hint: 'Every card opens a full view when clicked. Add a clip and the card gets a play badge and opens the video instead of the photo.',
+      blurb: 'Each card opens up when clicked. Add a video and the card plays it instead of showing the photo.',
       fields: [
-        { key: 'name',  label: 'Client name', type: 'text' },
-        { key: 'stat',  label: 'Result badge', type: 'text', hint: 'e.g. −31 lbs · 5 months' },
-        { key: 'image', label: 'Photo (the card thumbnail)', type: 'image' },
-        { key: 'full',  label: 'Larger photo for the full view', type: 'image', hint: 'Optional — the card photo is used if this is blank.' },
-        { key: 'video', label: 'Video (optional)', type: 'text',
-          hint: 'A YouTube/Vimeo/Instagram embed URL, or the path of an uploaded .mp4.' },
-        { key: 'videoType', label: 'Video kind', type: 'select', options: ['embed', 'file'] },
-        { key: 'videoWide', label: 'Video is 16:9 (not vertical)', type: 'bool' },
-        { key: 'story', label: 'Short story', type: 'textarea' },
-        { key: 'alt',   label: 'Image alt text (SEO)', type: 'textarea' },
-        { key: 'title', label: 'Image title', type: 'text' },
+        { key: 'name', label: 'Client name', type: 'text' },
+        { key: 'stat', label: 'The result', type: 'text', hint: 'For example: −31 lbs · 5 months' },
+        { key: 'image', label: 'Photo on the card', type: 'image' },
+        { key: 'full', label: 'Bigger photo when opened', type: 'image', hint: 'Optional. The card photo is used if you leave this empty.' },
+        { key: 'story', label: 'Their story', type: 'long' },
+        { key: 'video', label: 'Video link', type: 'text', hint: 'Optional. A YouTube, Vimeo or Instagram embed link.' },
+        { key: 'videoWide', label: 'The video is widescreen, not a vertical reel', type: 'bool' },
+        { key: 'alt', label: 'Photo description for Google', type: 'long' },
+        { key: 'title', label: 'Photo title', type: 'text' },
       ],
       blank: { name: 'New client', stat: '', image: '', full: '', video: '', videoType: 'embed', videoWide: false, story: '', alt: '', title: '' },
     },
     stats: {
-      label: 'Counters',
+      label: 'Numbers',
+      one: 'number',
       titleField: 'label',
+      blurb: 'The counters that tick up under the client results.',
       fields: [
-        { key: 'count',  label: 'Number', type: 'text' },
-        { key: 'suffix', label: 'Suffix', type: 'text', hint: '+, %, or blank' },
-        { key: 'label',  label: 'Caption', type: 'text' },
+        { key: 'count', label: 'Number', type: 'text' },
+        { key: 'suffix', label: 'Sign after it', type: 'text', hint: 'Usually + or %, or leave empty.' },
+        { key: 'label', label: 'What it counts', type: 'text' },
       ],
-      blank: { count: '0', suffix: '', label: 'New counter' },
+      blank: { count: '0', suffix: '', label: 'New number' },
     },
     videoClips: {
-      label: 'Video testimonials',
+      label: 'Video clips',
+      one: 'clip',
       titleField: 'name',
-      hint: 'The section stays hidden on the site while this list is empty.',
       fields: [
-        { key: 'name',  label: 'Client name', type: 'text' },
+        { key: 'name', label: 'Client name', type: 'text' },
         { key: 'label', label: 'Caption', type: 'text' },
-        { key: 'src',   label: 'Embed URL or uploaded file', type: 'text', hint: 'YouTube/Instagram embed URL, or an uploaded .mp4 path' },
-        { key: 'type',  label: 'Kind', type: 'select', options: ['embed', 'file'] },
-        { key: 'wide',  label: '16:9 (instead of vertical)', type: 'bool' },
+        { key: 'src', label: 'Video link', type: 'text', hint: 'A YouTube, Vimeo or Instagram embed link.' },
+        { key: 'wide', label: 'Widescreen, not a vertical reel', type: 'bool' },
       ],
       blank: { name: 'New clip', label: '', src: '', type: 'embed', wide: false },
     },
     faqs: {
       label: 'Questions',
+      one: 'question',
       titleField: 'q',
       fields: [
-        { key: 'q', label: 'Question', type: 'text' },
-        { key: 'a', label: 'Answer', type: 'textarea' },
+        { key: 'q', label: 'Question', type: 'rich' },
+        { key: 'a', label: 'Answer', type: 'long' },
       ],
       blank: { q: 'New question', a: '' },
     },
-    posts: {
-      label: 'Blog cards',
-      titleField: 'title',
-      fields: [
-        { key: 'tag',     label: 'Tag', type: 'text' },
-        { key: 'title',   label: 'Title', type: 'text' },
-        { key: 'excerpt', label: 'Excerpt', type: 'textarea' },
-        { key: 'url',     label: 'Link (leave blank for "Read soon")', type: 'text' },
-      ],
-      blank: { tag: 'Training', title: 'New post', excerpt: '', url: '' },
-    },
   },
+
+  /* ── application form ────────────────────────────────────────── */
+  questionTypes: [
+    { value: 'single', label: 'Pick one answer', hint: 'The form moves on as soon as they choose.' },
+    { value: 'multi', label: 'Pick several answers', hint: 'They tick as many as apply, then press Next.' },
+    { value: 'text', label: 'Type an answer', hint: 'A single line for them to write in.' },
+    { value: 'contact', label: 'Contact details', hint: 'Name, email, phone and Instagram.' },
+  ],
+
+  formScreens: [
+    {
+      title: 'Thank-you screen',
+      sub: 'Shown once the application has been sent.',
+      fields: [
+        { key: 'applyForm.success.title', label: 'Heading', type: 'rich' },
+        { key: 'applyForm.success.body', label: 'Message', type: 'long' },
+        { key: 'applyForm.success.cta', label: 'Text on the button', type: 'text' },
+      ],
+    },
+    {
+      title: 'Polite exit screen',
+      sub: 'Shown to anyone who picks an answer you have marked as ending the form.',
+      fields: [
+        { key: 'applyForm.disqualify.title', label: 'Heading', type: 'rich' },
+        { key: 'applyForm.disqualify.body', label: 'Message', type: 'long' },
+        { key: 'applyForm.disqualify.cta', label: 'Text on the button', type: 'text' },
+      ],
+    },
+    {
+      title: 'Buttons and messages',
+      fields: [
+        { key: 'applyForm.labels.next', label: 'Next button', type: 'text' },
+        { key: 'applyForm.labels.back', label: 'Back button', type: 'text' },
+        { key: 'applyForm.labels.submit', label: 'Send button on the last question', type: 'text' },
+        { key: 'applyForm.labels.required', label: 'Message when an answer is missing', type: 'text' },
+        { key: 'applyForm.labels.sending', label: 'While it is sending', type: 'text' },
+        { key: 'applyForm.labels.error', label: 'If sending fails', type: 'long' },
+      ],
+    },
+    {
+      title: 'Google',
+      fields: [
+        { key: 'applyForm.meta.title', label: 'Title in the browser tab', type: 'text' },
+        { key: 'applyForm.meta.description', label: 'Description for search engines', type: 'long' },
+      ],
+    },
+  ],
 };

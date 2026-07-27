@@ -6,23 +6,38 @@ Static HTML/CSS/JS, no build step, no framework, no dependencies.
 **Live:** https://pratyushadmin.edastra.in
 
 ```
-index.html    the shell — login gate + app frame
-app.js        all behaviour: auth, content editing, applications inbox, deploys
-schema.js     which fields appear in which section, and how collections are shaped
+index.html    the shell — sign-in + app frame
+app.js        behaviour: auth, the three sections, publishing
+editor.js     icons, the rich-text box, and the markup cleaner
+schema.js     what appears where, and what it is called in plain English
 styles.css    black/yellow, matching the site
 config.js     where the API is — plain committed values, edit and push
 ```
 
 ## What it does
 
+Three sections, no jargon, aimed at someone who has never seen HTML.
+
 | Section | |
 | --- | --- |
-| **Applications** | coaching applications from `/apply/` — filter by status, read every answer, triage (new / contacted / won / archived / spam), private notes, CSV export |
-| **Application form** | the questions themselves: wording, options, order, required flags, and which answer ends the form early |
-| Content sections | every editable string on the site, grouped as the page reads |
-| Collections | transformations, counters, video testimonials, FAQs, blog cards |
-| Links & SEO | apply URL, socials, page titles, social preview text |
-| **Deployments** | recent builds with status, plus a manual rebuild button |
+| **Blog posts** | write, edit and delete articles: title, cover photo, category, date, summary and a rich-text article with headings, lists, links and inline photos. Draft or live per post. |
+| **Website text** | every piece of copy on the site, grouped the way the page reads — headline, the problem, your story, what clients get, results, videos, how it works, who it suits, quote, Q&A, honest details, apply section, blog heading, links & Google. Photos upload by drag and drop. |
+| **Application form** | the questions themselves: wording, answer options, order, whether an answer is required, and which answer ends the form early. |
+
+Formatting is edited the way it reads — bold is bold, a heading is a heading.
+Pasted text arrives as plain text, and `editor.js` strips every tag and
+attribute the site does not style, so nothing the backend would reject can
+leave this page.
+
+## How the site reads it
+
+The website is plain static HTML with no build step. `js/cms.js` in the site
+repo loads `content/site.json` in the visitor's browser and swaps in whatever
+this console published — so a publish is live in seconds, with no rebuild. Each
+page ships a full copy of the current content as its fallback, so a slow or
+failed load degrades to the page as it shipped rather than to a blank screen.
+
+Blog posts are stored in `posts[]` and read at `/blog/post/?s=<web-address>`.
 
 ## How it fits together
 
@@ -31,16 +46,16 @@ goes through the backend on EC2, which is the only component with a GitHub
 token:
 
 ```
-this console  ──▶  backend (EC2)  ──▶  commits to Ed-Astra-Solutions/pratyush
-                                   └─▶  reads/writes applications (kept on the box)
+this console  ──▶  backend (EC2)  ──▶  commits content/site.json + images/
+                                   │     to the site repo
+                                   └─▶  receives coaching applications
                         │
                         ▼
-                 push to main runs the site's deploy workflow → GitHub Pages
+                 GitHub Pages serves the new file; the site picks it up
+                 on the next page load
 ```
 
-Site source and the application form live in
-[Ed-Astra-Solutions/pratyush](https://github.com/Ed-Astra-Solutions/pratyush);
-the backend is `backend/` in that repo.
+The site lives in Ed-Astra-Solutions/pratyush and the backend in its own repo.
 
 ## Deploying
 
