@@ -44,7 +44,10 @@
     const btn = $('login-btn'), err = $('login-err');
     btn.disabled = true; btn.textContent = 'Signing in…'; err.classList.add('hidden');
     try {
-      const r = await api('/api/login', { method: 'POST', body: JSON.stringify({ password: $('pw').value }) });
+      const r = await api('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({ username: $('user').value, password: $('pw').value }),
+      });
       token = r.token;
       sessionStorage.setItem('pl_token', token);
       await start();

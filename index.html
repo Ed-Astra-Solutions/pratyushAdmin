@@ -18,7 +18,9 @@
   <form class="login-card" id="login-form">
     <h1>Pratyush<b style="color:var(--yellow)">&nbsp;Liftz</b></h1>
     <p>Content console. Sign in to edit the site.</p>
-    <label for="pw">Admin password</label>
+    <label for="user">Username</label>
+    <input id="user" type="text" autocomplete="username" required>
+    <label for="pw" style="margin-top:14px">Password</label>
     <input id="pw" type="password" autocomplete="current-password" required>
     <p id="login-err" class="hidden" style="color:var(--red);margin:12px 0 0"></p>
     <button class="btn" style="width:100%;justify-content:center;margin-top:18px" type="submit" id="login-btn">Sign in</button>

@@ -8,6 +8,6 @@
  * Change these if the backend moves.
  */
 window.PL_ADMIN_CONFIG = {
-  apiBase: 'https://api.pratyushfitness.edastra.in',
+  apiBase: 'https://pratyushapi.edastra.in',
   siteUrl: 'https://pratyushfitness.edastra.in',
 };
