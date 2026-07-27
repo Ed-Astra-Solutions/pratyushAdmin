@@ -68,15 +68,21 @@ window.PL_SCHEMA = {
     transformations: {
       label: 'Client transformations',
       titleField: 'name',
+      hint: 'Every card opens a full view when clicked. Add a clip and the card gets a play badge and opens the video instead of the photo.',
       fields: [
         { key: 'name',  label: 'Client name', type: 'text' },
         { key: 'stat',  label: 'Result badge', type: 'text', hint: 'e.g. −31 lbs · 5 months' },
-        { key: 'image', label: 'Photo', type: 'image' },
+        { key: 'image', label: 'Photo (the card thumbnail)', type: 'image' },
+        { key: 'full',  label: 'Larger photo for the full view', type: 'image', hint: 'Optional — the card photo is used if this is blank.' },
+        { key: 'video', label: 'Video (optional)', type: 'text',
+          hint: 'A YouTube/Vimeo/Instagram embed URL, or the path of an uploaded .mp4.' },
+        { key: 'videoType', label: 'Video kind', type: 'select', options: ['embed', 'file'] },
+        { key: 'videoWide', label: 'Video is 16:9 (not vertical)', type: 'bool' },
         { key: 'story', label: 'Short story', type: 'textarea' },
         { key: 'alt',   label: 'Image alt text (SEO)', type: 'textarea' },
         { key: 'title', label: 'Image title', type: 'text' },
       ],
-      blank: { name: 'New client', stat: '', image: '', story: '', alt: '', title: '' },
+      blank: { name: 'New client', stat: '', image: '', full: '', video: '', videoType: 'embed', videoWide: false, story: '', alt: '', title: '' },
     },
     stats: {
       label: 'Counters',

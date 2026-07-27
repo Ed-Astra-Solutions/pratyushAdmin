@@ -73,7 +73,7 @@ Then `sudo systemctl restart pl-admin-api`.
 
 ```bash
 python3 -m http.server 4200
-# open http://localhost:4200 — config.js points at localhost:8080 by default
+# open http://localhost:4200 — config.js points at localhost:3005 by default
 ```
 
 Run the backend from the site repo (`cd backend && npm run dev`) to have
