@@ -3,7 +3,7 @@
 The content console for [pratyushfitness.edastra.in](https://pratyushfitness.edastra.in).
 Static HTML/CSS/JS, no build step, no framework, no dependencies.
 
-**Live:** https://ed-astra-solutions.github.io/pratyushAdmin/
+**Live:** https://pratyushadmin.edastra.in
 
 ```
 index.html    the shell — login gate + app frame
@@ -48,6 +48,8 @@ There is no build step. GitHub Pages serves this branch directly, so a push to
 `main` is the deploy — usually live within a minute.
 
 Settings → Pages → Source: **Deploy from a branch**, `main` / `/ (root)`.
+The custom domain is `pratyushadmin.edastra.in` (the `CNAME` file); point a
+DNS CNAME record for it at `ed-astra-solutions.github.io`.
 
 > Deliberately branch-based rather than an Actions workflow: custom workflows
 > are currently blocked on this organisation by a billing lock, and this repo
@@ -60,11 +62,11 @@ To point the console at a different backend, edit `config.js` and push.
 ## Setup
 
 **Allow this origin on the backend.** In the EC2 `.env`, `ADMIN_ORIGINS`
-must include `https://ed-astra-solutions.github.io` or the browser blocks every
+must include `https://pratyushadmin.edastra.in` or the browser blocks every
 call:
 
 ```
-ADMIN_ORIGINS=https://ed-astra-solutions.github.io,https://pratyushfitness.edastra.in
+ADMIN_ORIGINS=https://pratyushadmin.edastra.in,https://pratyushfitness.edastra.in
 ```
 
 Then `sudo systemctl restart pl-admin-api`.
@@ -73,8 +75,10 @@ Then `sudo systemctl restart pl-admin-api`.
 
 ```bash
 python3 -m http.server 4200
-# open http://localhost:4200 — config.js points at localhost:3005 by default
 ```
+
+`config.js` points at the production API. To work against a local backend,
+temporarily change `apiBase` to `http://localhost:3005` — just don't commit it.
 
 Run the backend from the site repo (`cd backend && npm run dev`) to have
 something to talk to.
