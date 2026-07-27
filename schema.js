@@ -7,25 +7,31 @@
  * declared explicitly because they need typed sub-fields.
  */
 window.PL_SCHEMA = {
+  // Pared back to the form's questions alone. The console is otherwise a
+  // full editor for site.json; uncomment a line to bring that part back.
   sections: [
-    { id: 'applications', label: 'Applications', submissions: true },
-    { id: 'applyform', label: 'Application form', form: true,
-      groups: ['applyForm.welcome', 'applyForm.success', 'applyForm.disqualify', 'applyForm.labels', 'applyForm.meta'] },
-    { id: 'hero',     label: 'Hero',        groups: ['hero', 'ticker'] },
-    { id: 'problem',  label: 'The problem', groups: ['problem'] },
-    { id: 'story',    label: 'Story',       groups: ['story'] },
-    { id: 'system',   label: 'The system',  groups: ['system'] },
-    { id: 'results',  label: 'Results',     groups: ['results'], collections: ['transformations', 'stats'] },
-    { id: 'videos',   label: 'Videos',      groups: ['videos'],  collections: ['videoClips'] },
-    { id: 'method',   label: 'How it works',groups: ['method'] },
-    { id: 'fit',      label: 'Who it fits', groups: ['fit'] },
-    { id: 'quote',    label: 'Quote',       groups: ['quote'] },
-    { id: 'faq',      label: 'FAQ',         groups: ['faq'],     collections: ['faqs'] },
-    { id: 'pillars',  label: 'Pillars',     groups: ['pillars'] },
-    { id: 'enquiry',  label: 'Apply / CTA', groups: ['enquiry'] },
-    { id: 'blog',     label: 'Blog',        groups: ['blog'],    collections: ['posts'] },
-    { id: 'settings', label: 'Links & SEO', groups: ['meta', 'links', 'images', 'footer'] },
-    { id: 'deploys',  label: 'Deployments', deploys: true },
+    { id: 'applyform', label: 'Application form', form: true },
+
+    // { id: 'applications', label: 'Applications', submissions: true },
+    // { id: 'hero',     label: 'Hero',        groups: ['hero', 'ticker'] },
+    // { id: 'problem',  label: 'The problem', groups: ['problem'] },
+    // { id: 'story',    label: 'Story',       groups: ['story'] },
+    // { id: 'system',   label: 'The system',  groups: ['system'] },
+    // { id: 'results',  label: 'Results',     groups: ['results'], collections: ['transformations', 'stats'] },
+    // { id: 'videos',   label: 'Videos',      groups: ['videos'],  collections: ['videoClips'] },
+    // { id: 'method',   label: 'How it works',groups: ['method'] },
+    // { id: 'fit',      label: 'Who it fits', groups: ['fit'] },
+    // { id: 'quote',    label: 'Quote',       groups: ['quote'] },
+    // { id: 'faq',      label: 'FAQ',         groups: ['faq'],     collections: ['faqs'] },
+    // { id: 'pillars',  label: 'Pillars',     groups: ['pillars'] },
+    // { id: 'enquiry',  label: 'Apply / CTA', groups: ['enquiry'] },
+    // { id: 'blog',     label: 'Blog',        groups: ['blog'],    collections: ['posts'] },
+    // { id: 'settings', label: 'Links & SEO', groups: ['meta', 'links', 'images', 'footer'] },
+    // { id: 'deploys',  label: 'Deployments', deploys: true },
+
+    // The 'applyform' entry above also carried these text groups:
+    //   groups: ['applyForm.welcome', 'applyForm.success',
+    //            'applyForm.disqualify', 'applyForm.labels', 'applyForm.meta'],
   ],
 
   groupLabels: {
