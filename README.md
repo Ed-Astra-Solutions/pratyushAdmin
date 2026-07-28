@@ -1,9 +1,9 @@
 # Pratyush Liftz — admin console
 
-The content console for [pratyushfitness.edastra.in](https://pratyushfitness.edastra.in).
+The content console for [pratyushliftz.com](https://pratyushliftz.com).
 Static HTML/CSS/JS, no build step, no framework, no dependencies.
 
-**Live:** https://pratyushadmin.edastra.in
+**Live:** https://admin.pratyushliftz.com
 
 ```
 index.html    the shell — sign-in + app frame
@@ -63,7 +63,7 @@ There is no build step. GitHub Pages serves this branch directly, so a push to
 `main` is the deploy — usually live within a minute.
 
 Settings → Pages → Source: **Deploy from a branch**, `main` / `/ (root)`.
-The custom domain is `pratyushadmin.edastra.in` (the `CNAME` file); point a
+The custom domain is `admin.pratyushliftz.com` (the `CNAME` file); point a
 DNS CNAME record for it at `ed-astra-solutions.github.io`.
 
 > Deliberately branch-based rather than an Actions workflow: custom workflows
@@ -77,11 +77,11 @@ To point the console at a different backend, edit `config.js` and push.
 ## Setup
 
 **Allow this origin on the backend.** In the EC2 `.env`, `ADMIN_ORIGINS`
-must include `https://pratyushadmin.edastra.in` or the browser blocks every
+must include `https://admin.pratyushliftz.com` or the browser blocks every
 call:
 
 ```
-ADMIN_ORIGINS=https://pratyushadmin.edastra.in,https://pratyushfitness.edastra.in
+ADMIN_ORIGINS=https://admin.pratyushliftz.com,https://pratyushliftz.com,https://www.pratyushliftz.com
 ```
 
 Then `sudo systemctl restart pl-admin-api`.

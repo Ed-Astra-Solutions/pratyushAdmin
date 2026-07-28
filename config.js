@@ -9,5 +9,5 @@
  */
 window.PL_ADMIN_CONFIG = {
   apiBase: 'https://pratyushapi.edastra.in',
-  siteUrl: 'https://pratyushfitness.edastra.in',
+  siteUrl: 'https://pratyushliftz.com',
 };
