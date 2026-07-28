@@ -146,6 +146,7 @@ window.PL_SCHEMA = {
           { key: 'faq.eyebrow', label: 'Small label above the heading', type: 'text' },
           { key: 'faq.heading', label: 'Heading', type: 'rich' },
           { key: 'faq.sub', label: 'Sentence under the heading', type: 'long' },
+          { key: 'faq.ctaLabel', label: 'Text on the button', type: 'text' },
         ],
       }],
       collections: ['faqs'],
