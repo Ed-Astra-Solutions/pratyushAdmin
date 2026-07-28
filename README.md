@@ -21,7 +21,7 @@ Three sections, no jargon, aimed at someone who has never seen HTML.
 | Section | |
 | --- | --- |
 | **Blog posts** | write, edit and delete articles: title, cover photo, category, date, summary and a rich-text article with headings, lists, links and inline photos. Draft or live per post. |
-| **Website text** | every piece of copy on the site, grouped the way the page reads — headline, the problem, your story, what clients get, results, videos, how it works, who it suits, quote, Q&A, honest details, apply section, blog heading, links & Google. Photos upload by drag and drop. |
+| **Website text** | every piece of copy on the site, grouped the way the page reads — headline, your story, what clients get, results, videos, Q&A, apply section, blog heading, links & Google. Photos upload by drag and drop. |
 | **Application form** | the questions themselves: wording, answer options, order, whether an answer is required, and which answer ends the form early. |
 
 Formatting is edited the way it reads — bold is bold, a heading is a heading.

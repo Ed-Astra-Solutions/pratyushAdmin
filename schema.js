@@ -53,31 +53,14 @@ window.PL_SCHEMA = {
       ],
     },
     {
-      id: 'problem',
-      label: 'The problem',
-      blurb: 'The section that names what your clients are struggling with.',
-      cards: [{
-        title: 'Copy',
-        fields: [
-          { key: 'problem.eyebrow', label: 'Small label above the heading', type: 'text' },
-          { key: 'problem.heading', label: 'Heading', type: 'rich' },
-          { key: 'problem.pivot', label: 'Paragraph under the heading', type: 'long' },
-          { key: 'problem.pain1', label: 'Problem 1', type: 'long', hint: 'Start with the bold sentence, then the explanation.' },
-          { key: 'problem.pain2', label: 'Problem 2', type: 'long' },
-          { key: 'problem.pain3', label: 'Problem 3', type: 'long' },
-        ],
-      }],
-    },
-    {
       id: 'story',
       label: 'Your story',
       blurb: 'The "meet your coach" section.',
       cards: [
         {
-          title: 'Photos',
+          title: 'Photo',
           fields: [
             { key: 'images.story', label: 'Portrait of you', type: 'image' },
-            { key: 'images.banner', label: 'Wide team banner', type: 'image' },
           ],
         },
         {
@@ -135,7 +118,6 @@ window.PL_SCHEMA = {
           { key: 'results.eyebrow', label: 'Small label above the heading', type: 'text' },
           { key: 'results.heading', label: 'Heading', type: 'rich' },
           { key: 'results.sub', label: 'Sentence under the heading', type: 'long' },
-          { key: 'results.note', label: 'Small print below the cards', type: 'long' },
         ],
       }],
       collections: ['transformations', 'stats'],
@@ -155,67 +137,6 @@ window.PL_SCHEMA = {
       collections: ['videoClips'],
     },
     {
-      id: 'method',
-      label: 'How it works',
-      blurb: 'The three steps from applying to results.',
-      cards: [
-        {
-          title: 'Section heading',
-          fields: [
-            { key: 'method.eyebrow', label: 'Small label above the heading', type: 'text' },
-            { key: 'method.heading', label: 'Heading', type: 'rich' },
-          ],
-        },
-        ...[1, 2, 3].map((n) => ({
-          title: `Step ${n}`,
-          fields: [
-            { key: `method.step${n}.title`, label: 'Step name', type: 'rich' },
-            { key: `method.step${n}.body`, label: 'What happens', type: 'long' },
-          ],
-        })),
-      ],
-    },
-    {
-      id: 'fit',
-      label: 'Who it suits',
-      blurb: 'The two lists: who this is for, and who it is not for.',
-      cards: [
-        {
-          title: 'Section heading',
-          fields: [
-            { key: 'fit.eyebrow', label: 'Small label above the heading', type: 'text' },
-            { key: 'fit.heading', label: 'Heading', type: 'rich' },
-          ],
-        },
-        {
-          title: 'This is for you if…',
-          fields: [
-            { key: 'fit.yesTitle', label: 'List heading', type: 'rich' },
-            { key: 'fit.yesItems', label: 'Points', type: 'list' },
-          ],
-        },
-        {
-          title: 'This is not for you if…',
-          fields: [
-            { key: 'fit.noTitle', label: 'List heading', type: 'rich' },
-            { key: 'fit.noItems', label: 'Points', type: 'list' },
-          ],
-        },
-      ],
-    },
-    {
-      id: 'quote',
-      label: 'Pull quote',
-      blurb: 'The large quote across the page.',
-      cards: [{
-        title: 'Quote',
-        fields: [
-          { key: 'quote.text', label: 'The quote', type: 'long' },
-          { key: 'quote.cite', label: 'Who said it', type: 'rich' },
-        ],
-      }],
-    },
-    {
       id: 'faq',
       label: 'Questions & answers',
       blurb: 'The drop-down questions near the bottom of the home page.',
@@ -228,28 +149,6 @@ window.PL_SCHEMA = {
         ],
       }],
       collections: ['faqs'],
-    },
-    {
-      id: 'pillars',
-      label: 'The honest details',
-      blurb: 'Commitment, boundaries and what happens afterwards.',
-      cards: [
-        {
-          title: 'Section heading',
-          fields: [
-            { key: 'pillars.eyebrow', label: 'Small label above the heading', type: 'text' },
-            { key: 'pillars.heading', label: 'Heading', type: 'rich' },
-          ],
-        },
-        ...[1, 2, 3].map((n) => ({
-          title: `Detail ${n}`,
-          fields: [
-            { key: `pillars.p${n}.key`, label: 'Short tag on the left', type: 'text' },
-            { key: `pillars.p${n}.title`, label: 'Title', type: 'rich' },
-            { key: `pillars.p${n}.body`, label: 'Description', type: 'long' },
-          ],
-        })),
-      ],
     },
     {
       id: 'enquiry',
@@ -406,6 +305,9 @@ window.PL_SCHEMA = {
         { key: 'applyForm.labels.next', label: 'Next button', type: 'text' },
         { key: 'applyForm.labels.back', label: 'Back button', type: 'text' },
         { key: 'applyForm.labels.submit', label: 'Send button on the last question', type: 'text' },
+        { key: 'applyForm.labels.enterHint', label: 'Hint beside the Next button', type: 'rich' },
+        { key: 'applyForm.labels.multi', label: 'Label above a pick-several question', type: 'text', hint: 'Shown where the other questions read “Question 3 of 11”.' },
+        { key: 'applyForm.labels.progress', label: 'Progress counter', type: 'text', hint: 'Keep {n} and {total} — they are filled in with the real numbers.' },
         { key: 'applyForm.labels.required', label: 'Message when an answer is missing', type: 'text' },
         { key: 'applyForm.labels.sending', label: 'While it is sending', type: 'text' },
         { key: 'applyForm.labels.error', label: 'If sending fails', type: 'long' },
