@@ -14,6 +14,10 @@
   const SITE = (CFG.siteUrl || '').replace(/\/$/, '');
   const $ = (id) => document.getElementById(id);
 
+  // Photos are stored as site paths but live on the site's domain, so the
+  // editor needs to know where to point its previews.
+  window.PL_UI.setMediaBase(SITE);
+
   let token = sessionStorage.getItem('pl_token') || '';
   let content = null;      // working copy
   let baseline = '';       // JSON of the last published state
@@ -167,6 +171,7 @@
     window.scrollTo(0, 0);
     if (view.section === 'blog') return renderBlog(panel);
     if (view.section === 'form') return renderForm(panel);
+    if (view.section === 'applications') return renderApplications(panel);
     return renderPage(panel);
   }
 
@@ -682,12 +687,12 @@
     /* The article itself. */
     const bodyCard = document.createElement('div');
     bodyCard.className = 'card';
-    bodyCard.innerHTML = '<h3>The article</h3><p class="sub">Write it the way you want it to read. Use the buttons above the box for headings, lists, links and photos.</p>';
+    bodyCard.innerHTML = '<h3>The article</h3><p class="sub">Write it the way you want it to read. Use the buttons above the box for headings, lists and links. For a photo mid-article, put the cursor where you want it and press the photo button — or just drag one in from your desktop. Click a photo you have placed to describe or remove it.</p>';
     bodyCard.appendChild(richText({
       value: post.body, multiline: true,
       placeholder: 'Start writing…',
       onInput: (html) => { post.body = html; changed(); },
-      onImage: pickFile,
+      onUpload: upload,
     }));
     panel.appendChild(bodyCard);
 
@@ -894,6 +899,301 @@
     wrap.appendChild(rows);
     return wrap;
   }
+
+  /* ── applications ────────────────────────────────────────────── */
+
+  /**
+   * The people who have applied.
+   *
+   * Everything else in this console is website copy: edited locally, then
+   * published in one go. Applications are the opposite — they are personal
+   * data that lives only on the server, never goes near the site repo, and
+   * is read fresh from the backend each time this section opens. There is
+   * no Publish step here; a status or a note saves the moment you set it.
+   */
+  let appFilter = '';   // '' means every status
+
+  /**
+   * The form's questions are editable, so answers are stored under whatever
+   * ids the questions had. Read the current wording back out of the form so
+   * an answer shows its question rather than `blockers`.
+   */
+  function questionLabels() {
+    const out = {};
+    for (const step of content?.applyForm?.steps ?? []) {
+      out[step.id] = { label: plain(step.question) || step.id, fields: {} };
+      for (const f of step.fields ?? []) out[step.id].fields[f.key] = f.label || f.key;
+    }
+    return out;
+  }
+
+  const statusMeta = (v) => S.submissionStatuses.find((s) => s.value === v)
+    || { value: v, label: v, blurb: '' };
+
+  /** The name and email are worth showing up front; both are optional. */
+  function appWho(rec) {
+    const a = rec.answers || {};
+    const c = a.contact && typeof a.contact === 'object' ? a.contact : {};
+    return {
+      name: plain(c.name || a.name || '') || 'No name given',
+      email: plain(c.email || a.email || ''),
+      phone: plain(c.phone || a.phone || ''),
+    };
+  }
+
+  async function renderApplications(panel) {
+    $('section-title').textContent = 'Applications';
+
+    const intro = document.createElement('p');
+    intro.className = 'intro';
+    intro.textContent = 'Everyone who has sent your application form. These are private to you — they are never published to your website, and anything you change here saves straight away.';
+    panel.appendChild(intro);
+
+    const bar = document.createElement('div');
+    bar.className = 'app-bar';
+    panel.appendChild(bar);
+
+    const list = document.createElement('div');
+    list.className = 'app-list';
+    list.innerHTML = '<p class="intro">Loading…</p>';
+    panel.appendChild(list);
+
+    let data;
+    try {
+      const q = appFilter ? `?status=${encodeURIComponent(appFilter)}` : '';
+      data = await api(`/api/submissions${q}`);
+    } catch (e) {
+      bar.remove();
+      list.innerHTML = '';
+      const err = document.createElement('div');
+      err.className = 'empty-state';
+      err.innerHTML = '<h3>Could not load your applications</h3>';
+      const p = document.createElement('p');
+      p.textContent = e.message;
+      const retry = document.createElement('button');
+      retry.className = 'btn ghost sm';
+      retry.textContent = 'Try again';
+      retry.onclick = () => render();
+      err.append(p, retry);
+      list.appendChild(err);
+      return;
+    }
+
+    /* Filter buttons, each with its own count. */
+    const counts = data.counts || {};
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const tabs = [{ value: '', label: 'Everyone', n: total },
+      ...S.submissionStatuses.map((s) => ({ value: s.value, label: s.label, n: counts[s.value] || 0 }))];
+    for (const t of tabs) {
+      const b = document.createElement('button');
+      b.className = `tab${t.value === appFilter ? ' on' : ''}`;
+      b.innerHTML = `<span>${t.label}</span><b>${t.n}</b>`;
+      b.onclick = () => { appFilter = t.value; render(); };
+      bar.appendChild(b);
+    }
+
+    const spacer = document.createElement('span');
+    spacer.className = 'spacer';
+    bar.appendChild(spacer);
+
+    const csv = document.createElement('button');
+    csv.className = 'btn ghost sm';
+    csv.textContent = 'Download as a spreadsheet';
+    csv.onclick = () => downloadCsv(csv);
+    bar.appendChild(csv);
+
+    list.innerHTML = '';
+    const rows = data.submissions || [];
+    if (!rows.length) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = appFilter
+        ? `<h3>Nobody here yet</h3><p>No applications with the status “${statusMeta(appFilter).label}”.</p>`
+        : '<h3>No applications yet</h3><p>When somebody fills in your application form, they will appear here.</p>';
+      list.appendChild(empty);
+      return;
+    }
+
+    const labels = questionLabels();
+    for (const rec of rows) list.appendChild(appCard(rec, labels));
+  }
+
+  /** The CSV needs the auth header, so it is fetched then handed to the browser. */
+  async function downloadCsv(btn) {
+    const was = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Preparing…';
+    try {
+      const q = appFilter ? `?status=${encodeURIComponent(appFilter)}` : '';
+      const res = await fetch(`${API}/api/submissions.csv${q}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.status === 401) { signOut(); throw new Error('Your session ended — please sign in again.'); }
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `applications-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      toast(e.message, 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = was;
+    }
+  }
+
+  function appCard(rec, labels) {
+    const who = appWho(rec);
+    const card = document.createElement('div');
+    card.className = 'app';
+
+    /* ── the always-visible summary line ── */
+    const head = document.createElement('div');
+    head.className = 'app-head';
+
+    const open = document.createElement('button');
+    open.className = 'app-open';
+    open.setAttribute('aria-expanded', 'false');
+    const when = new Date(rec.receivedAt);
+    open.innerHTML = `${icon('chev')}<span class="meta"><b></b><span></span></span>`;
+    open.querySelector('b').textContent = who.name;
+    open.querySelector('.meta span').textContent = [
+      Number.isNaN(+when) ? '' : when.toLocaleString(undefined, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      who.email,
+    ].filter(Boolean).join(' · ');
+    head.appendChild(open);
+
+    if (rec.suspected) {
+      const flag = document.createElement('span');
+      flag.className = 'pill draft';
+      flag.textContent = rec.suspected === 'honeypot' ? 'Caught by the spam trap' : 'Filled in suspiciously fast';
+      head.appendChild(flag);
+    }
+
+    /* Status is a plain dropdown — it saves on change, with no publish. */
+    const sel = document.createElement('select');
+    sel.className = 'app-status';
+    for (const s of S.submissionStatuses) {
+      const o = document.createElement('option');
+      o.value = s.value; o.textContent = s.label;
+      if (s.value === rec.status) o.selected = true;
+      sel.appendChild(o);
+    }
+    sel.onchange = async () => {
+      const prev = rec.status;
+      sel.disabled = true;
+      try {
+        const updated = await patchApp(rec.id, { status: sel.value });
+        rec.status = updated.status;
+        toast(`Moved ${who.name} to “${statusMeta(rec.status).label}”.`, 'ok');
+        // The counts in the filter bar are now stale, and a filtered view may
+        // no longer contain this person at all.
+        render();
+      } catch (e) {
+        sel.value = prev;
+        toast(e.message, 'err');
+      } finally { sel.disabled = false; }
+    };
+    head.appendChild(sel);
+    card.appendChild(head);
+
+    /* ── the answers, hidden until asked for ── */
+    const body = document.createElement('div');
+    body.className = 'app-body hidden';
+    card.appendChild(body);
+
+    let built = false;
+    open.onclick = () => {
+      const showing = !body.classList.toggle('hidden');
+      open.setAttribute('aria-expanded', String(showing));
+      open.classList.toggle('open', showing);
+      if (showing && !built) { built = true; buildAppBody(body, rec, labels, who); }
+    };
+    return card;
+  }
+
+  function buildAppBody(body, rec, labels, who) {
+    const dl = document.createElement('dl');
+    dl.className = 'answers';
+    for (const [key, value] of Object.entries(rec.answers || {})) {
+      const spec = labels[key] || { label: key, fields: {} };
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        // The contact step: one row per detail, under the question's heading.
+        for (const [k2, v2] of Object.entries(value)) {
+          if (!String(v2 ?? '').trim()) continue;
+          dl.appendChild(answerRow(spec.fields[k2] || k2, String(v2)));
+        }
+      } else {
+        const text = Array.isArray(value) ? value.join(', ') : String(value ?? '');
+        if (!text.trim()) continue;
+        dl.appendChild(answerRow(spec.label, text));
+      }
+    }
+    if (!dl.children.length) {
+      const p = document.createElement('p');
+      p.className = 'hint';
+      p.textContent = 'This application arrived with no answers.';
+      dl.appendChild(p);
+    }
+    body.appendChild(dl);
+
+    /* Quick ways to actually reply. */
+    if (who.email || who.phone) {
+      const acts = document.createElement('div');
+      acts.className = 'app-acts';
+      if (who.email) {
+        const a = document.createElement('a');
+        a.className = 'btn ghost sm';
+        a.href = `mailto:${who.email}`;
+        a.textContent = 'Reply by email';
+        acts.appendChild(a);
+      }
+      if (who.phone) {
+        const a = document.createElement('a');
+        a.className = 'btn quiet sm';
+        a.href = `tel:${who.phone.replace(/[^\d+]/g, '')}`;
+        a.textContent = who.phone;
+        acts.appendChild(a);
+      }
+      body.appendChild(acts);
+    }
+
+    /* Private notes, saved when you click away. */
+    const wrap = label('Your private notes', 'Only you can see this. It is never published.');
+    const ta = document.createElement('textarea');
+    ta.value = rec.notes || '';
+    ta.placeholder = 'What you discussed, what to follow up on…';
+    let saved = ta.value;
+    ta.onblur = async () => {
+      if (ta.value === saved) return;
+      ta.disabled = true;
+      try {
+        const updated = await patchApp(rec.id, { notes: ta.value });
+        rec.notes = saved = updated.notes;
+        toast('Note saved.', 'ok');
+      } catch (e) {
+        toast(e.message, 'err');
+      } finally { ta.disabled = false; }
+    };
+    wrap.appendChild(ta);
+    if (wrap._hint) wrap.appendChild(wrap._hint);
+    body.appendChild(wrap);
+  }
+
+  function answerRow(term, text) {
+    const frag = document.createDocumentFragment();
+    const dt = document.createElement('dt');
+    dt.textContent = term;
+    const dd = document.createElement('dd');
+    dd.textContent = text;
+    frag.append(dt, dd);
+    return frag;
+  }
+
+  const patchApp = (id, patch) => api(`/api/submissions/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+  });
 
   /* ── publishing ──────────────────────────────────────────────── */
 

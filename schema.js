@@ -21,6 +21,22 @@ window.PL_SCHEMA = {
     { id: 'blog', label: 'Blog posts', icon: 'pencil' },
     { id: 'pages', label: 'Website text', icon: 'page' },
     { id: 'form', label: 'Application form', icon: 'form' },
+    { id: 'applications', label: 'Applications', icon: 'inbox' },
+  ],
+
+  /**
+   * The people who have applied. Unlike everything else here, these live on
+   * the server and are never published to the website — so this section
+   * saves the moment you change something, with no Publish step.
+   *
+   * The ids must match STATUSES in the backend's submissions.js.
+   */
+  submissionStatuses: [
+    { value: 'new', label: 'New', blurb: 'Applied, not yet replied to.' },
+    { value: 'contacted', label: 'Replied', blurb: 'You have written back.' },
+    { value: 'won', label: 'Signed up', blurb: 'They became a client.' },
+    { value: 'archived', label: 'Closed', blurb: 'Not going ahead.' },
+    { value: 'spam', label: 'Spam', blurb: 'Junk, or caught by the spam checks.' },
   ],
 
   /* ── website text, one panel per part of the site ────────────── */

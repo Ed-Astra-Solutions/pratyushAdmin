@@ -111,6 +111,20 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .rt-bar .sep{width:1px;background:var(--line);margin:4px 5px}
 .rt-bar svg{width:15px;height:15px}
 
+/* Photos placed inside an article. */
+.rt-wrap{position:relative}
+.rt.dropping{border-color:var(--yellow);background:var(--raise)}
+.rt img{cursor:pointer}
+.rt img.picked{outline:2px solid var(--yellow);outline-offset:2px}
+/* Still uploading: shown, but visibly not finished. */
+.rt img[data-up]{opacity:.45;animation:rt-up 1.1s ease-in-out infinite}
+@keyframes rt-up{50%{opacity:.75}}
+.rt-img-bar{position:absolute;z-index:5;display:flex;gap:4px;padding:4px;border-radius:7px;
+  background:rgba(12,12,14,.92);border:1px solid var(--line2);box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.rt-img-bar[hidden]{display:none}
+.rt-img-bar button{padding:5px 10px;border-radius:5px;color:var(--bone);font-size:12.5px;white-space:nowrap}
+.rt-img-bar button:hover{background:var(--raise);color:var(--yellow)}
+
 /* ── images ────────────────────────────────────────────────────── */
 .pic{border:1px dashed var(--line2);border-radius:10px;background:var(--panel2);overflow:hidden}
 .pic.has{border-style:solid}
@@ -157,6 +171,38 @@ select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,va
 .empty-state{border:1px dashed var(--line2);border-radius:12px;padding:56px 24px;text-align:center;color:var(--ash)}
 .empty-state h3{color:var(--bone);font-size:17px;margin-bottom:6px}
 .empty-state p{font-size:14px;margin-bottom:22px}
+/* ── applications ──────────────────────────────────────────────── */
+/* Server-side, saved on the spot: no dirty state, no publish step. */
+.app-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.app-bar .spacer{flex:1}
+.tab{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--line);
+  border-radius:99px;color:var(--ash);font-size:13.5px;transition:border-color .15s,color .15s}
+.tab:hover{border-color:var(--line2);color:var(--bone)}
+.tab.on{color:var(--yellow);border-color:var(--yellow)}
+.tab b{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.tab.on b{color:var(--yellow)}
+.app{border:1px solid var(--line);background:var(--panel);border-radius:10px;margin-bottom:10px;transition:border-color .15s}
+.app:hover{border-color:var(--line2)}
+.app-head{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.app-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left}
+.app-open svg{color:var(--dim);transition:transform .15s}
+.app-open.open svg{transform:rotate(90deg)}
+.app-open .meta{min-width:0}
+.app-open .meta b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-open .meta span{color:var(--ash);font-size:13px}
+.app-status{width:auto;min-width:132px;padding:7px 34px 7px 12px;font-size:13.5px;flex:none}
+.app-body{border-top:1px solid var(--line);padding:18px 16px}
+.answers{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:10px 20px;margin-bottom:20px}
+.answers dt{color:var(--ash);font-size:13.5px}
+.answers dd{font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.app-acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+@media (max-width:720px){
+  .app-head{flex-wrap:wrap}
+  .app-status{width:100%}
+  .answers{grid-template-columns:1fr;gap:2px 0}
+  .answers dd{margin-bottom:10px}
+}
+
 .editor-top{display:flex;align-items:center;gap:12px;margin-bottom:24px}
 .editor-top .spacer{flex:1}
 .title-in{font-size:26px;font-weight:600;padding:14px 16px;line-height:1.3}

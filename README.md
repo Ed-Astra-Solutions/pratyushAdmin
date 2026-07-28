@@ -7,7 +7,7 @@ Static HTML/CSS/JS, no build step, no framework, no dependencies.
 
 ```
 index.html    the shell — sign-in + app frame
-app.js        behaviour: auth, the three sections, publishing
+app.js        behaviour: auth, the four sections, publishing
 editor.js     icons, the rich-text box, and the markup cleaner
 schema.js     what appears where, and what it is called in plain English
 styles.css    black/yellow, matching the site
@@ -16,13 +16,19 @@ config.js     where the API is — plain committed values, edit and push
 
 ## What it does
 
-Three sections, no jargon, aimed at someone who has never seen HTML.
+Four sections, no jargon, aimed at someone who has never seen HTML.
 
 | Section | |
 | --- | --- |
 | **Blog posts** | write, edit and delete articles: title, cover photo, category, date, summary and a rich-text article with headings, lists, links and inline photos. Draft or live per post. |
 | **Website text** | every piece of copy on the site, grouped the way the page reads — headline, your story, what clients get, results, videos, Q&A, apply section, blog heading, links & Google. Photos upload by drag and drop. |
 | **Application form** | the questions themselves: wording, answer options, order, whether an answer is required, and which answer ends the form early. |
+| **Applications** | the people who have applied: read their answers, mark them New / Replied / Signed up / Closed / Spam, keep private notes, and export the lot as a spreadsheet. |
+
+Applications are the one section that is **not** website content. They are
+personal data, they live only on the EC2 box, they are never committed to the
+public site repo — and they save the moment you change them, with no Publish
+step. Everything else is copy: edited locally, then published in one go.
 
 Formatting is edited the way it reads — bold is bold, a heading is a heading.
 Pasted text arrives as plain text, and `editor.js` strips every tag and

@@ -16,6 +16,7 @@ window.PL_UI = (() => {
     pencil: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
     page: '<path d="M4 3h9l7 7v11a0 0 0 0 1 0 0H4Z"/><path d="M13 3v7h7"/><path d="M8 14h8M8 17h5"/>',
     form: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M7 9h4M7 13h10M7 17h6"/>',
+    inbox: '<path d="M4 4h16l1 9v7H3v-7Z"/><path d="M3 13h5l1.5 3h5L16 13h5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
     up: '<path d="M12 19V5M5 12l7-7 7 7"/>',
@@ -53,6 +54,33 @@ window.PL_UI = (() => {
   const INLINE_TAGS = { B: [], STRONG: [], I: [], EM: [], BR: [], A: ['href', 'target', 'rel'] };
 
   const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
+
+  /* ── where photos live ───────────────────────────────────────── */
+  /* The console runs on its own domain, the photos live on the site's.
+     What gets saved is always the site path ("/images/x.jpg") — that is
+     what the website needs — but inside the editor the same picture has to
+     be pointed at the site to be visible at all. These two translate
+     between the stored form and the shown form. */
+
+  let MEDIA_BASE = '';                       // set by the console at start-up
+
+  const storedSrc = (src) => {
+    const v = String(src ?? '').trim();
+    if (MEDIA_BASE && v.startsWith(`${MEDIA_BASE}/`)) return v.slice(MEDIA_BASE.length);
+    return v;
+  };
+  const shownSrc = (src) => {
+    const v = String(src ?? '').trim();
+    return MEDIA_BASE && v.startsWith('/') ? MEDIA_BASE + v : v;
+  };
+
+  /** Swaps every stored image path for one the console can actually load. */
+  function forDisplay(html) {
+    const d = document.createElement('div');
+    d.innerHTML = String(html ?? '');
+    for (const img of d.querySelectorAll('img')) img.setAttribute('src', shownSrc(img.getAttribute('src')));
+    return d.innerHTML;
+  }
   /** Tags whose contents go too — script text is not copy. */
   const DROP = new Set(['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'BASE',
     'FORM', 'INPUT', 'BUTTON', 'SELECT', 'TEXTAREA', 'NOSCRIPT', 'TEMPLATE', 'META', 'TITLE']);
@@ -76,8 +104,11 @@ window.PL_UI = (() => {
       const copy = document.createElement(tag);
       for (const a of attrs) {
         const v = child.getAttribute(a);
-        if (v) copy.setAttribute(a, v);
+        if (v) copy.setAttribute(a, a === 'src' ? storedSrc(v) : v);
       }
+      // An image is nothing to a screen reader without one, but an empty
+      // alt is still valid markup — keep the attribute either way.
+      if (tag === 'IMG' && !copy.hasAttribute('alt')) copy.setAttribute('alt', '');
       if (tag === 'A') { copy.target = '_blank'; copy.rel = 'noopener'; }
       cleanNode(child, allowed, copy);
       out.appendChild(copy);
@@ -101,7 +132,7 @@ window.PL_UI = (() => {
    * @param {string} o.value        current HTML
    * @param {boolean} o.multiline   full editor (blog posts) vs one line of copy
    * @param {function} o.onInput    called with cleaned HTML on every change
-   * @param {function} [o.onImage]  async () => path, wired to the photo button
+   * @param {function} [o.onUpload] async (File) => site path, for photos
    */
   function richText(o) {
     const wrap = document.createElement('div');
@@ -109,7 +140,7 @@ window.PL_UI = (() => {
     box.className = 'rt';
     box.contentEditable = 'true';
     box.spellcheck = true;
-    box.innerHTML = clean(o.value, !o.multiline);
+    box.innerHTML = forDisplay(clean(o.value, !o.multiline));
     if (o.placeholder) box.dataset.placeholder = o.placeholder;
     if (o.multiline) box.dataset.multiline = '1';
 
@@ -174,12 +205,75 @@ window.PL_UI = (() => {
       cmd('createLink', url);
     }
 
-    async function addImage() {
-      if (!o.onImage) return;
-      const path = await o.onImage();
-      if (!path) return;
+    /* ── photos inside the article ───────────────────────────────── */
+    /* Clicking a file picker throws the caret away, and an upload takes a
+       second or two. So the caret is remembered before the picker opens,
+       and the picture appears in that exact spot straight away as a local
+       preview — the uploaded path swaps in underneath it when it lands.
+       Nothing is saved until it does. */
+
+    let caret = null;        // last cursor position inside the box
+    let pending = 0;         // uploads still in flight
+    let seq = 0;
+
+    const remember = () => {
+      const sel = document.getSelection();
+      if (sel?.rangeCount && box.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+        caret = sel.getRangeAt(0).cloneRange();
+      }
+    };
+    const putCaret = (range) => {
       box.focus();
-      cmd('insertHTML', `<img src="/${String(path).replace(/^\//, '')}" alt="">`);
+      const r = range || caret;
+      if (!r) return;
+      const sel = document.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+    };
+    /** Where a dropped file was aimed, across the two browser spellings. */
+    const caretAt = (x, y) => {
+      if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+      const p = document.caretPositionFromPoint?.(x, y);
+      if (!p) return null;
+      const r = document.createRange();
+      r.setStart(p.offsetNode, p.offset);
+      r.collapse(true);
+      return r;
+    };
+
+    async function insertImage(file, at) {
+      if (!o.onUpload || !file || !/^image\//.test(file.type)) return;
+      putCaret(at);
+
+      const id = `u${++seq}`;
+      const preview = URL.createObjectURL(file);
+      document.execCommand('insertHTML', false, `<img src="${preview}" alt="" data-up="${id}"><p><br></p>`);
+      remember();
+
+      pending += 1;
+      let path = null;
+      try { path = await o.onUpload(file); } finally { pending -= 1; }
+
+      const img = box.querySelector(`img[data-up="${id}"]`);
+      URL.revokeObjectURL(preview);
+      if (!img) return;                       // deleted while it was uploading
+      if (!path) { img.remove(); sync(); return; }
+      img.setAttribute('src', shownSrc(`/${String(path).replace(/^\//, '')}`));
+      img.removeAttribute('data-up');
+      sync();
+    }
+
+    /** One picker, however many photos — they land in the order chosen. */
+    function addImage() {
+      remember();
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.onchange = async () => {
+        for (const f of [...input.files]) await insertImage(f);
+      };
+      input.click();
     }
 
     // Highlight whichever buttons apply where the caret is.
@@ -192,21 +286,53 @@ window.PL_UI = (() => {
     };
 
     box.addEventListener('input', sync);
-    box.addEventListener('keyup', refresh);
-    box.addEventListener('mouseup', refresh);
+    box.addEventListener('keyup', () => { refresh(); remember(); });
+    box.addEventListener('mouseup', () => { refresh(); remember(); });
     box.addEventListener('focus', () => {
       // Bold must produce <b>, not a styled <span> the cleaner would drop.
       try { document.execCommand('styleWithCSS', false, false); } catch { /* not supported */ }
       try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch { /* not supported */ }
     });
-    box.addEventListener('blur', () => { box.innerHTML = clean(box.innerHTML, !o.multiline); });
+    box.addEventListener('blur', () => {
+      if (pending) return;                    // a preview would be cleaned away
+      box.innerHTML = forDisplay(clean(box.innerHTML, !o.multiline));
+    });
 
     // Paste arrives as plain text; formatting is applied here, deliberately.
+    // A copied picture is the exception — it uploads like any other.
     box.addEventListener('paste', (e) => {
+      const data = e.clipboardData || window.clipboardData;
+      const files = [...(data?.files ?? [])].filter((f) => /^image\//.test(f.type));
+      if (o.multiline && files.length) {
+        e.preventDefault();
+        remember();
+        (async () => { for (const f of files) await insertImage(f); })();
+        return;
+      }
       e.preventDefault();
-      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-      document.execCommand('insertText', false, text);
+      document.execCommand('insertText', false, data.getData('text/plain'));
     });
+
+    /* Dropping a photo straight onto the spot it belongs. */
+    if (o.multiline) {
+      const dragged = (e) => [...(e.dataTransfer?.items ?? [])].some((i) => i.kind === 'file');
+      box.addEventListener('dragover', (e) => {
+        if (!dragged(e)) return;
+        e.preventDefault();
+        box.classList.add('dropping');
+      });
+      box.addEventListener('dragleave', (e) => {
+        if (e.target === box) box.classList.remove('dropping');
+      });
+      box.addEventListener('drop', async (e) => {
+        const files = [...(e.dataTransfer?.files ?? [])].filter((f) => /^image\//.test(f.type));
+        box.classList.remove('dropping');
+        if (!files.length) return;
+        e.preventDefault();
+        let at = caretAt(e.clientX, e.clientY);
+        for (const f of files) { await insertImage(f, at); at = null; }
+      });
+    }
 
     // One line of copy stays one line: Enter makes a line break, not a paragraph.
     if (!o.multiline) {
@@ -218,9 +344,78 @@ window.PL_UI = (() => {
       });
     }
 
-    wrap.append(bar, box);
+    /* ── a photo you have already placed ─────────────────────────── */
+    /* Click it and the two things anyone actually wants are right there:
+       describe it, or take it out again. */
+
+    let picked = null;
+    const imgBar = document.createElement('div');
+    imgBar.className = 'rt-img-bar';
+    imgBar.hidden = true;
+
+    const imgTool = (label, run) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.onmousedown = (e) => e.preventDefault();
+      b.onclick = run;
+      return b;
+    };
+
+    const hideImgBar = () => {
+      picked?.classList.remove('picked');
+      picked = null;
+      imgBar.hidden = true;
+    };
+    const showImgBar = (img) => {
+      picked?.classList.remove('picked');
+      picked = img;
+      img.classList.add('picked');
+      const r = img.getBoundingClientRect();
+      const w = wrap.getBoundingClientRect();
+      imgBar.style.top = `${r.bottom - w.top - 44}px`;
+      imgBar.style.left = `${r.left - w.left + 10}px`;
+      imgBar.hidden = false;
+      imgBar.firstChild.textContent = img.alt ? 'Edit description' : 'Describe photo';
+    };
+
+    imgBar.append(
+      imgTool('Describe photo', () => {
+        if (!picked) return;
+        const v = prompt('Describe this photo in a few words.\n\nIt helps Google, and anyone using a screen reader.', picked.alt || '');
+        if (v == null) return;
+        picked.alt = v.trim();
+        sync();
+        showImgBar(picked);
+      }),
+      imgTool('Remove', () => {
+        if (!picked) return;
+        picked.remove();
+        hideImgBar();
+        sync();
+      }),
+    );
+
+    if (o.multiline) {
+      box.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG' && !e.target.dataset.up) showImgBar(e.target);
+        else hideImgBar();
+      });
+      box.addEventListener('input', () => { if (picked && !box.contains(picked)) hideImgBar(); });
+      box.addEventListener('blur', hideImgBar);
+      addEventListener('scroll', () => { if (picked) showImgBar(picked); }, { passive: true });
+    }
+
+    wrap.className = 'rt-wrap';
+    wrap.append(bar, box, imgBar);
     return wrap;
   }
 
-  return { icon, clean, richText };
+  return {
+    icon,
+    clean,
+    richText,
+    /** Where the console should load site photos from, for previews. */
+    setMediaBase: (base) => { MEDIA_BASE = String(base || '').replace(/\/$/, ''); },
+  };
 })();
